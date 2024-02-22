@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 class LogFileWriter {
   final Level printLevel;
   final String appName;
+  final Directory? directory;
 
   late final File _logFile;
   late final IOSink _logWriter;
@@ -21,11 +22,12 @@ class LogFileWriter {
   LogFileWriter({
     required this.printLevel,
     required this.appName,
+    this.directory,
   });
 
   Future<void> initialize() async {
     if (!kIsWeb) {
-      final tempDirectory = await getTemporaryDirectory();
+      final tempDirectory = directory ?? await getTemporaryDirectory();
       final fileName = _formatDateTimeForLogFileName(DateTime.now());
       final path = p.join(tempDirectory.path, fileName);
 
