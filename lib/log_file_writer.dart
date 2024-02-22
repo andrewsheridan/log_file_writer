@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:date_format/date_format.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -7,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 class LogFileWriter {
   final Level printLevel;
-  final String Function(DateTime dateTime) fileNameFactory;
+  final String appName;
 
   late final File _logFile;
   late final IOSink _logWriter;
@@ -19,13 +20,13 @@ class LogFileWriter {
 
   LogFileWriter({
     required this.printLevel,
-    required this.fileNameFactory,
+    required this.appName,
   });
 
   Future<void> initialize() async {
     if (!kIsWeb) {
       final tempDirectory = await getTemporaryDirectory();
-      final fileName = fileNameFactory(DateTime.now());
+      final fileName = _formatDateTimeForLogFileName(DateTime.now());
       final path = p.join(tempDirectory.path, fileName);
 
       _logFile = File(path);
@@ -63,6 +64,12 @@ class LogFileWriter {
 
     return "\x1B[0m";
   }
+
+  String _formatDateTimeForLogFileName(DateTime dateTime) =>
+      "${appName}_${formatDate(
+        dateTime.toUtc(),
+        [yyyy, '-', mm, '-', dd, '--', H, '-', nn, '-', s],
+      )}.txt";
 
   Future<File> copyLogFileTo(String path) async {
     return _logFile.copy(path);
