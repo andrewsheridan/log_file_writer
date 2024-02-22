@@ -9,11 +9,11 @@ import 'package:path_provider/path_provider.dart';
 class LogFileWriter {
   final Level printLevel;
   final String appName;
-  final Directory? directory;
 
   late final File _logFile;
   late final IOSink _logWriter;
   final bool _initialized = false;
+  final Logger _logger = Logger("LogFileWriter");
 
   String get filePath => _logFile.path;
   File get logFile => _logFile;
@@ -22,19 +22,9 @@ class LogFileWriter {
   LogFileWriter({
     required this.printLevel,
     required this.appName,
-    this.directory,
   });
 
   Future<void> initialize() async {
-    if (!kIsWeb) {
-      final tempDirectory = directory ?? await getTemporaryDirectory();
-      final fileName = _formatDateTimeForLogFileName(DateTime.now());
-      final path = p.join(tempDirectory.path, fileName);
-
-      _logFile = File(path);
-      _logWriter = _logFile.openWrite();
-    }
-
     Logger.root.onRecord.listen((record) {
       if (record.level >= printLevel) {
         final log =
@@ -47,6 +37,19 @@ class LogFileWriter {
         debugPrint("${_getColorCodeByLogLevel(record.level)}$log");
       }
     });
+
+    if (!kIsWeb) {
+      try {
+        final tempDirectory = await getTemporaryDirectory();
+        final fileName = _formatDateTimeForLogFileName(DateTime.now());
+        final path = p.join(tempDirectory.path, fileName);
+
+        _logFile = File(path);
+        _logWriter = _logFile.openWrite();
+      } catch (ex) {
+        _logger.severe("Failed to initialize log file.", ex);
+      }
+    }
   }
 
   static String _getColorCodeByLogLevel(Level level) {
