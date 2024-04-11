@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:date_format/date_format.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -37,6 +39,19 @@ class LogFileWriter {
         debugPrint("${_getColorCodeByLogLevel(record.level)}$log");
       }
     });
+
+    AppLifecycleListener(
+      onDetach: () {
+        _logger.info("App detaching. Closing log file.");
+        _logWriter.flush().then((value) => _logWriter.close());
+      },
+      onExitRequested: () async {
+        _logger.info("Exit requested. Closing log file.");
+        await _logWriter.flush();
+        await _logWriter.close();
+        return AppExitResponse.exit;
+      },
+    );
 
     if (!kIsWeb) {
       try {
