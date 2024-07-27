@@ -9,7 +9,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 class LogFileWriter {
-  final Level printLevel;
+  final Level writeToFileLevel;
+  final Level printToConsoleLevel;
   final String appName;
 
   late final File _logFile;
@@ -22,20 +23,26 @@ class LogFileWriter {
   bool get initialized => _initialized;
 
   LogFileWriter({
-    required this.printLevel,
+    required this.writeToFileLevel,
+    required this.printToConsoleLevel,
     required this.appName,
   });
 
   Future<void> initialize() async {
     Logger.root.onRecord.listen((record) {
-      if (record.level >= printLevel) {
-        final log =
-            "${record.time} [${record.loggerName}] ${record.level.name} - ${record.message}${(record.error == null ? "" : " - ${record.error}")}${(record.stackTrace == null ? "" : "\n${record.stackTrace}\n\n")}";
+      if (record.level < writeToFileLevel &&
+          record.level < printToConsoleLevel) {
+        return;
+      }
 
-        if (!kIsWeb) {
-          _logWriter.writeln(log);
-        }
+      final log =
+          "${record.time} [${record.loggerName}] ${record.level.name} - ${record.message}${(record.error == null ? "" : " - ${record.error}")}${(record.stackTrace == null ? "" : "\n${record.stackTrace}\n\n")}";
 
+      if (!kIsWeb && record.level >= writeToFileLevel) {
+        _logWriter.writeln(log);
+      }
+
+      if (record.level >= printToConsoleLevel) {
         debugPrint("${_getColorCodeByLogLevel(record.level)}$log");
       }
     });
