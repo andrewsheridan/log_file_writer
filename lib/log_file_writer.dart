@@ -29,29 +29,10 @@ class LogFileWriter {
   });
 
   Future<void> initialize() async {
-    Logger.root.onRecord.listen((record) {
-      if (record.level < writeToFileLevel &&
-          record.level < printToConsoleLevel) {
-        return;
-      }
-
-      final log =
-          "${record.time} [${record.loggerName}] ${record.level.name} - ${record.message}${(record.error == null ? "" : " - ${record.error}")}${(record.stackTrace == null ? "" : "\n${record.stackTrace}\n\n")}";
-
-      if (!kIsWeb && record.level >= writeToFileLevel) {
-        _logWriter.writeln(log);
-      }
-
-      if (record.level >= printToConsoleLevel) {
-        debugPrint("${_getColorCodeByLogLevel(record.level)}$log");
-      }
-    });
+    Logger.root.level = Level.ALL;
+    Logger.root.onRecord.listen(_onNewLog);
 
     AppLifecycleListener(
-      onDetach: () {
-        _logger.info("App detaching. Closing log file.");
-        _logWriter.flush().then((value) => _logWriter.close());
-      },
       onExitRequested: () async {
         _logger.info("Exit requested. Closing log file.");
         await _logWriter.flush();
@@ -71,6 +52,23 @@ class LogFileWriter {
       } catch (ex) {
         _logger.severe("Failed to initialize log file.", ex);
       }
+    }
+  }
+
+  void _onNewLog(record) {
+    if (record.level < writeToFileLevel && record.level < printToConsoleLevel) {
+      return;
+    }
+
+    final log =
+        "${record.time} [${record.loggerName}] ${record.level.name} - ${record.message}${(record.error == null ? "" : " - ${record.error}")}${(record.stackTrace == null ? "" : "\n${record.stackTrace}\n\n")}";
+
+    if (!kIsWeb && record.level >= writeToFileLevel) {
+      _logWriter.writeln(log);
+    }
+
+    if (record.level >= printToConsoleLevel) {
+      debugPrint("${_getColorCodeByLogLevel(record.level)}$log");
     }
   }
 
