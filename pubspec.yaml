@@ -1,6 +1,6 @@
 name: log_file_writer
 description: "Prints logs to a log file."
-version: 0.1.0
+version: 0.1.1
 homepage: null
 
 environment:
@@ -15,6 +15,7 @@ dependencies:
   logging: ^1.2.0
   path: ^1.9.0
   path_provider: ^2.1.2
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_lints: ^4.0.0
