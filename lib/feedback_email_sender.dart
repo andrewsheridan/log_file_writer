@@ -43,7 +43,7 @@ class FeedbackEmailSender {
             'subject': subjectLine,
           }),
         );
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        await launchUrl(uri);
       } catch (ex) {
         _logger.severe(
           "Failed to send email via link.",
