@@ -1,7 +1,7 @@
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:log_file_writer/log_file_writer.dart';
 import 'package:logging/logging.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FeedbackEmailSender {
   final Logger _logger = Logger("FeedbackEmailSender");
@@ -14,6 +14,13 @@ class FeedbackEmailSender {
     required this.subjectLine,
     required this.recipient,
   }) : _logFileWriter = logFileWriter;
+
+  String? _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((MapEntry<String, String> e) =>
+            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+  }
 
   Future<bool> sendFeedbackEmail() async {
     try {
@@ -29,13 +36,20 @@ class FeedbackEmailSender {
       _logger.severe(
           "Failed to send email via email client.", ex, StackTrace.current);
       try {
-        final link = "mailto:$recipient?subject=$subjectLine";
-        launchUrlString(link, mode: LaunchMode.externalApplication);
+        final uri = Uri(
+          scheme: "mailto",
+          path: recipient,
+          query: _encodeQueryParameters(<String, String>{
+            'subject': subjectLine,
+          }),
+        );
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (ex) {
         _logger.severe(
           "Failed to send email via link.",
           ex,
         );
+        rethrow;
       }
     }
 

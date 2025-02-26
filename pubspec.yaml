@@ -1,6 +1,6 @@
 name: log_file_writer
 description: "Prints logs to a log file."
-version: 0.1.1
+version: 0.1.2
 homepage: null
 
 environment:
