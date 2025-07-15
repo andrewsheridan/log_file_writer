@@ -55,7 +55,7 @@ class LogFileWriter {
     }
   }
 
-  void _onNewLog(record) {
+  void _onNewLog(LogRecord record) {
     if (record.level < writeToFileLevel && record.level < printToConsoleLevel) {
       return;
     }
