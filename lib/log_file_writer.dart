@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 import 'dart:ui';
 
@@ -8,10 +9,12 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-class LogFileWriter {
+class LogFileWriter extends ChangeNotifier {
   final Level writeToFileLevel;
   final Level printToConsoleLevel;
+  final Level inMemoryLevel;
   final String appName;
+  final List<String> _history = [];
 
   late final File _logFile;
   late final IOSink _logWriter;
@@ -21,10 +24,30 @@ class LogFileWriter {
   String get filePath => _logFile.path;
   File get logFile => _logFile;
   bool get initialized => _initialized;
+  UnmodifiableListView<String> get history => UnmodifiableListView(_history);
+  String recentHistory({int count = 10}) {
+    if (history.length <= count) return history.join("\n");
+
+    final output = StringBuffer();
+    for (int i = 1; i <= count; i++) {
+      output.writeln(history[history.length - i]);
+    }
+
+    return output.toString();
+  }
+
+  String truncatedHistory({int characterCount = 1200}) {
+    final output = history.join("\n");
+
+    if (output.length <= characterCount) return output;
+
+    return output.substring(output.length - characterCount);
+  }
 
   LogFileWriter({
     required this.writeToFileLevel,
     required this.printToConsoleLevel,
+    required this.inMemoryLevel,
     required this.appName,
   });
 
@@ -60,8 +83,10 @@ class LogFileWriter {
       return;
     }
 
+    final logNoStackTrace =
+        "${record.time} [${record.loggerName}] ${record.level.name} - ${record.message}${(record.error == null ? "" : " - ${record.error}")}";
     final log =
-        "${record.time} [${record.loggerName}] ${record.level.name} - ${record.message}${(record.error == null ? "" : " - ${record.error}")}${(record.stackTrace == null ? "" : "\n${record.stackTrace}\n\n")}";
+        "$logNoStackTrace${(record.stackTrace == null ? "" : "\n${record.stackTrace}\n\n")}";
 
     if (!kIsWeb && record.level >= writeToFileLevel) {
       _logWriter.writeln(log);
@@ -69,6 +94,11 @@ class LogFileWriter {
 
     if (record.level >= printToConsoleLevel) {
       debugPrint("${_getColorCodeByLogLevel(record.level)}$log");
+    }
+
+    if (record.level >= inMemoryLevel) {
+      _history.add(logNoStackTrace);
+      notifyListeners();
     }
   }
 
