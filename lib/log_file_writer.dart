@@ -67,7 +67,7 @@ class LogFileWriter extends ChangeNotifier {
     if (!kIsWeb) {
       try {
         final tempDirectory = await getTemporaryDirectory();
-        final fileName = _formatDateTimeForLogFileName(DateTime.now());
+        final fileName = formatDateTimeForLogFileName(DateTime.now());
         final path = p.join(tempDirectory.path, fileName);
 
         _logFile = File(path);
@@ -120,7 +120,7 @@ class LogFileWriter extends ChangeNotifier {
     return "\x1B[0m";
   }
 
-  String _formatDateTimeForLogFileName(DateTime dateTime) =>
+  String formatDateTimeForLogFileName(DateTime dateTime) =>
       "${appName}_${formatDate(
         dateTime.toUtc(),
         [yyyy, '-', mm, '-', dd, '--', H, '-', nn, '-', s],

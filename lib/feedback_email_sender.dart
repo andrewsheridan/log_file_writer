@@ -23,14 +23,17 @@ class FeedbackEmailSender {
         .join('&');
   }
 
-  Uri mailToUri(bool attachLogs) => Uri(
-        scheme: "mailto",
-        path: recipient,
-        query: _encodeQueryParameters(<String, String>{
-          'subject': subjectLine,
-          if (attachLogs) 'body': _logFileWriter.truncatedHistory(),
-        }),
-      );
+  Uri mailToUri(bool attachLogs) {
+    final history = _logFileWriter.truncatedHistory();
+    return Uri(
+      scheme: "mailto",
+      path: recipient,
+      query: _encodeQueryParameters(<String, String>{
+        'subject': subjectLine,
+        if (attachLogs) 'body': history,
+      }),
+    );
+  }
 
   Future<void> sendFeedbackEmail({required bool attachLogs}) async {
     if (!kIsWeb) {
