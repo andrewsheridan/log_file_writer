@@ -1,10 +1,8 @@
 import 'dart:collection';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:date_format/date_format.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -55,14 +53,14 @@ class LogFileWriter extends ChangeNotifier {
     Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen(_onNewLog);
 
-    AppLifecycleListener(
-      onExitRequested: () async {
-        _logger.info("Exit requested. Closing log file.");
-        await _logWriter.flush();
-        await _logWriter.close();
-        return AppExitResponse.exit;
-      },
-    );
+    // AppLifecycleListener(
+    //   onExitRequested: () async {
+    //     _logger.info("Exit requested. Closing log file.");
+    //     await _logWriter.flush();
+    //     await _logWriter.close();
+    //     return AppExitResponse.exit;
+    //   },
+    // );
 
     if (!kIsWeb) {
       try {
