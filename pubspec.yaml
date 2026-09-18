@@ -1,6 +1,6 @@
 name: log_file_writer
 description: "Prints logs to a log file."
-version: 1.1.1
+version: 1.2.0
 homepage: null
 
 environment:
@@ -11,7 +11,7 @@ dependencies:
   date_format: ^2.0.7
   flutter:
     sdk: flutter
-  flutter_email_sender: ^8.0.0
+  flutter_email_sender: ^10.0.1
   logging: ^1.2.0
   path: ^1.9.0
   path_provider: ^2.1.2
